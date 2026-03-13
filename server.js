@@ -1,14 +1,18 @@
+const express = require("express");
+const http = require("http");
 const { Server } = require("socket.io");
+
+const app = express();
+const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"],
   },
 });
 
 io.on("connection", (socket) => {
-  console.log("client connected:", socket.id);
+  console.log("User connected");
 
   socket.on("patient-update", (data) => {
     socket.broadcast.emit("patient-update", data);
@@ -18,12 +22,13 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("patient-status", status);
   });
 
-  socket.on("patient-submitted", (data) => {
-    socket.broadcast.emit("patient-update", data);
-    socket.broadcast.emit("patient-status", "submitted");
-  });
-
   socket.on("disconnect", () => {
-    console.log("client disconnected:", socket.id);
+    console.log("User disconnected");
   });
+});
+
+const PORT = process.env.PORT || 4000;
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

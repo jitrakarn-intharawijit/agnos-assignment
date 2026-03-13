@@ -270,3 +270,11 @@ If the project were expanded further:
 # 👨‍💻 Author
 
 Developed as part of the Agnos technical assignment.
+
+Live Demo
+
+Patient Form
+https://agnos-assignment-7n42v3bod-jitrakarn-intharawijits-projects.vercel.app/patient
+
+Staff Dashboard
+https://agnos-assignment-7n42v3bod-jitrakarn-intharawijits-projects.vercel.app/staff
