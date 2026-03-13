@@ -3,28 +3,34 @@
 ## 📌 Project Overview
 
 This project demonstrates a real-time patient form system where patient input is synchronized live to a staff dashboard.
-While the patient is filling out the form, the staff interface updates automatically to reflect the latest data and status.
 
-The goal is to simulate a simplified **hospital intake system** where medical staff can monitor patient information as it is being entered.
+While the patient fills out the form, the staff dashboard updates automatically in real time. This simulates a simplified **hospital intake workflow**, allowing medical staff to monitor patient information as it is being entered.
+
+The goal of this assignment is to demonstrate:
+
+- Real-time data synchronization
+- Clean component architecture
+- Responsive UI design
+- Practical usage of WebSocket communication
 
 ---
 
-# 🚀 Installation Guide
+## 🚀 Installation Guide
 
-## 1. Clone the repository
+### 1. Clone the repository
 
 ```bash
 git clone <repository-url>
 cd agnos-assignment
 ```
 
-## 2. Install dependencies
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-## 3. Start the Socket Server
+### 3. Start the Socket Server
 
 ```bash
 node server.js
@@ -36,7 +42,7 @@ The socket server will run on:
 http://localhost:4000
 ```
 
-## 4. Start the Next.js application
+### 4. Start the Next.js application
 
 ```bash
 npm run dev
@@ -56,9 +62,11 @@ Staff dashboard:
 http://localhost:3000/staff
 ```
 
+⚠️ Both the socket server and the Next.js application must be running simultaneously for real-time synchronization to work.
+
 ---
 
-# ✨ Features
+## ✨ Features
 
 ### Real-Time Patient Data Sync
 
@@ -66,7 +74,7 @@ Patient input is sent to the server and instantly reflected in the staff dashboa
 
 ### Live Patient Status
 
-The dashboard shows the current patient activity:
+The dashboard displays the patient's current activity status.
 
 | Status    | Description                              |
 | --------- | ---------------------------------------- |
@@ -86,7 +94,7 @@ The layout adapts to different screen sizes:
 
 ---
 
-# 🗂 Project Structure
+## 🗂 Project Structure
 
 ```
 agnos-assignment
@@ -115,69 +123,33 @@ agnos-assignment
 
 ---
 
-# 🎨 UI/UX Design Decisions
-
-### Clean Medical Dashboard Style
-
-The interface follows a simple and clear layout commonly used in hospital dashboards.
-
-Key principles:
-
-* Clear section grouping
-* Readable typography
-* Minimal visual noise
-
-### Information Grouping
-
-The patient form is divided into logical sections:
-
-* Personal Information
-* Contact Information
-* Emergency Contact
-
-This helps staff quickly scan relevant information.
-
-### Status Indicator
-
-The dashboard uses a **visual status indicator** with color codes:
-
-| Color  | Meaning        |
-| ------ | -------------- |
-| Yellow | Patient typing |
-| Green  | Form submitted |
-| Gray   | Idle           |
-
-A pulse animation is used to highlight real-time activity.
-
----
-
-# 🧩 Component Architecture
+## 🧩 Component Architecture
 
 ### PatientForm
 
 Handles:
 
-* Form state management
-* Sending updates via socket
-* Emitting typing and submit status
+- Form state management
+- Sending updates via socket
+- Emitting typing and submission status
 
 ### StaffView
 
 Responsible for:
 
-* Listening to real-time socket events
-* Rendering patient data
-* Displaying activity status
+- Listening to real-time socket events
+- Rendering patient data
+- Displaying activity status
 
 ### FormField
 
-Reusable component used for rendering:
+Reusable component responsible for rendering:
 
-* Input
-* Select
-* Textarea
+- Input
+- Select
+- Textarea
 
-This improves code reuse and consistency.
+This improves reusability and consistency across the form.
 
 ### Socket Client
 
@@ -191,9 +163,9 @@ This module initializes and exports the socket connection used across the applic
 
 ---
 
-# ⚡ Real-Time Synchronization Flow
+## ⚡ Real-Time Synchronization Flow
 
-The application uses **Socket.IO** to synchronize data between the patient form and staff dashboard.
+The application uses **Socket.IO** to synchronize data between the patient form and the staff dashboard.
 
 ### Data Flow
 
@@ -211,39 +183,57 @@ Staff Dashboard
 
 ### Events Used
 
-| Event             | Description                     |
-| ----------------- | ------------------------------- |
-| patient-update    | Sends updated form data         |
-| patient-status    | Sends current patient status    |
-| patient-submitted | Sent when the form is completed |
+| Event             | Description                           |
+| ----------------- | ------------------------------------- |
+| patient-update    | Sends updated form data               |
+| patient-status    | Sends current patient activity status |
+| patient-submitted | Sent when the form is completed       |
 
 ### Typing Detection
 
 When the patient types:
 
-```
-socket.emit("patient-status", "typing")
+```ts
+socket.emit("patient-status", "typing");
 ```
 
 ### Idle Detection
 
 If no input occurs for 10 seconds:
 
-```
-socket.emit("patient-status", "idle")
+```ts
+socket.emit("patient-status", "idle");
 ```
 
 ### Form Submission
 
 When the form is submitted:
 
-```
-socket.emit("patient-status", "submitted")
+```ts
+socket.emit("patient-status", "submitted");
 ```
 
 ---
 
-# 🔧 Technologies Used
+## 🏗 System Architecture
+
+```
+Patient Browser
+      │
+      │ WebSocket
+      ▼
+Socket Server (Node.js + Socket.IO)
+      │
+      │ Broadcast
+      ▼
+Staff Dashboard
+```
+
+The socket server acts as a central hub that receives patient updates and broadcasts them to connected staff dashboards.
+
+---
+
+## 🔧 Technologies Used
 
 | Technology   | Purpose                 |
 | ------------ | ----------------------- |
@@ -255,26 +245,53 @@ socket.emit("patient-status", "submitted")
 
 ---
 
-# 📈 Possible Improvements
+## 📈 Possible Improvements
 
-If the project were expanded further:
+If the project were expanded further, several enhancements could be implemented:
 
-* Multi-patient monitoring dashboard
-* Online/offline detection
-* Patient queue management
-* Form validation improvements
-* Authentication for staff access
+- Multi-patient monitoring dashboard
+- Online/offline patient detection
+- Patient queue management system
+- Advanced form validation
+- Authentication and authorization for staff access
+- Persistent data storage with a database
 
 ---
 
-# 👨‍💻 Author
+## 🌐 Live Services
 
-Developed as part of the Agnos technical assignment.
-
-Live Demo
+### Frontend (Vercel)
 
 Patient Form
 https://agnos-assignment-7n42v3bod-jitrakarn-intharawijits-projects.vercel.app/patient
 
 Staff Dashboard
 https://agnos-assignment-7n42v3bod-jitrakarn-intharawijits-projects.vercel.app/staff
+
+### Socket Server (Render)
+
+https://agnos-socket-server-isn5.onrender.com
+
+---
+
+## ⚙️ Environment Configuration
+
+If deploying the frontend and socket server separately, update the socket endpoint in:
+
+```
+src/lib/socket.ts
+```
+
+Example configuration:
+
+```ts
+const socket = io("https://agnos-socket-server-isn5.onrender.com");
+```
+
+---
+
+## 👨‍💻 Author
+
+Developed as part of the Agnos technical assignment.
+
+Jitrakarn Intharawijit
