@@ -1,20 +1,75 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { socket } from "@/lib/socket";
+import { socket } from "../../../lib/socket";
+
+type StatusConfig = {
+  text: string;
+  color: string;
+  textColor: string;
+  animate?: string;
+};
 
 export default function StaffView() {
   const [data, setData] = useState<any>({});
 
+  const [status, setStatus] = useState("idle");
+
   useEffect(() => {
-    socket.on("patient-update", (data) => {
-      setData(data);
-    });
+    const handleStatus = (s: string) => {
+      setStatus(s);
+    };
+
+    socket.on("patient-status", handleStatus);
 
     return () => {
-      socket.off("patient-update");
+      socket.off("patient-status", handleStatus);
     };
   }, []);
+
+  useEffect(() => {
+    const handleUpdate = (d: any) => {
+      setData(d);
+    };
+
+    socket.on("patient-update", handleUpdate);
+
+    return () => {
+      socket.off("patient-update", handleUpdate);
+    };
+  }, []);
+
+  const StatusIndicator = () => {
+    const statusConfig: Record<string, StatusConfig> = {
+      typing: {
+        text: "Patient typing",
+        color: "bg-yellow-400",
+        textColor: "text-yellow-600",
+        animate: "animate-pulse",
+      },
+      submitted: {
+        text: "Form submitted",
+        color: "bg-green-500",
+        textColor: "text-green-600",
+      },
+      idle: {
+        text: "Idle",
+        color: "bg-gray-400",
+        textColor: "text-gray-500",
+      },
+    };
+
+    const current = statusConfig[status] ?? statusConfig.idle;
+
+    return (
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <span
+          className={`w-2.5 h-2.5 rounded-full ${current.color} ${current.animate ?? ""}`}
+        ></span>
+        <span className={current.textColor}>{current.text}</span>
+      </div>
+    );
+  };
 
   const Field = ({ label, value, className = "" }: any) => (
     <div className={className}>
@@ -28,13 +83,12 @@ export default function StaffView() {
   return (
     <div className="bg-white shadow-md rounded-xl p-6 max-w-3xl space-y-6">
       {/* Header */}
-      <div className="border-b pb-4">
+      <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-800">
           Patient Live Preview
         </h2>
-        <p className="text-sm text-gray-400">
-          Data updates in real-time while patient is typing
-        </p>
+
+        <StatusIndicator />
       </div>
 
       {/* Personal Info */}

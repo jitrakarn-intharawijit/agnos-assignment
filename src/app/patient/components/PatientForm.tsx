@@ -1,14 +1,15 @@
 "use client";
 
-import { useForm, useWatch } from "react-hook-form";
-import { socket } from "@/lib/socket";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useEffect, useState } from "react";
 import FormField from "@/components/FormField";
 import { FieldConfig, InitailPatientFormData, PatientFormData } from "./type";
+import { socket } from "../../../lib/socket";
 
 export default function PatientForm() {
+  const [submitted, setSubmitted] = useState(false);
+
   const {
-    register,
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
@@ -19,24 +20,39 @@ export default function PatientForm() {
 
   const data = useWatch({ control });
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      socket.emit("patient-update", data);
-    }, 300);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [data]);
-
-  const [submitted, setSubmitted] = useState(false);
-
+  // ####################### Submit #######################
   const onSubmit = async (formData: PatientFormData) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    socket.emit("patient-submitted", formData);
+
+    socket.emit("patient-update", formData); // ส่งข้อมูลล่าสุด
+    socket.emit("patient-status", "submitted"); // ส่งสถานะ
+
     setSubmitted(true);
   };
 
+  useEffect(() => {
+    if (!data) return;
+
+    // แจ้งว่ากำลังพิมพ์
+    socket.emit("patient-status", "typing");
+
+    // debounce update
+    const updateTimer = setTimeout(() => {
+      socket.emit("patient-update", data);
+    }, 300);
+
+    // idle detection
+    const idleTimer = setTimeout(() => {
+      socket.emit("patient-status", "idle");
+    }, 10000);
+
+    return () => {
+      clearTimeout(updateTimer);
+      clearTimeout(idleTimer);
+    };
+  }, [data]);
+
+  // ####################### Field #######################
   const formSections: { title: string; fields: FieldConfig[] }[] = [
     {
       title: "Personal Information",
@@ -83,64 +99,86 @@ export default function PatientForm() {
     },
   ] satisfies { title: string; fields: FieldConfig[] }[];
 
-  const renderField = (field: FieldConfig) => {
-    if (field.type === "select") {
-      return (
-        <select
-          {...register(field.name, {
-            required: field.required ? `${field.label} is required` : false,
-          })}
-          className={`input ${errors[field.name] ? "border-red-500" : ""}`}
-        >
-          <option value="">Select {field.label}</option>
-
-          {field.options?.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
-      );
-    }
-
-    if (field.type === "textarea") {
-      return (
-        <textarea
-          {...register(field.name, {
-            required: field.required ? `${field.label} is required` : false,
-          })}
-          className={`input min-h-[100px] ${
-            errors[field.name] ? "border-red-500" : ""
-          }`}
-          maxLength={field.maxLength ?? 2000}
-        />
-      );
-    }
-
+  const renderField = (config: FieldConfig) => {
     return (
-      <input
-        type={field.type ?? "text"}
-        {...register(field.name, {
-          required: field.required ? `${field.label} is required` : false,
+      <Controller
+        name={config.name}
+        control={control}
+        rules={{
+          required: config.required ? `${config.label} is required` : false,
 
-          ...(field.name === "email" && {
+          ...(config.name === "email" && {
             pattern: {
               value: /^\S+@\S+\.\S+$/,
               message: "Invalid email format",
             },
           }),
 
-          ...(field.name === "phone" && {
+          ...(config.name === "phone" && {
             pattern: {
               value: /^[0-9\-]+$/,
               message: "Invalid phone number",
             },
-            onChange: (e) =>
-              (e.target.value = e.target.value.replace(/[^0-9-]/g, "")),
           }),
-        })}
-        className={`input ${errors[field.name] ? "border-red-500" : ""}`}
-        maxLength={field.maxLength ?? 100}
+        }}
+        render={({ field, fieldState }) => {
+          const hasError = !!fieldState.error;
+
+          return (
+            <>
+              {config.type === "select" && (
+                <select
+                  {...field}
+                  className={`input ${hasError ? "!border-red-500" : ""}`}
+                >
+                  <option value="">Select {config.label}</option>
+
+                  {config.options?.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {config.type === "textarea" && (
+                <textarea
+                  {...field}
+                  className={`input min-h-[100px] ${hasError ? "!border-red-500" : ""}`}
+                  maxLength={config.maxLength ?? 2000}
+                />
+              )}
+
+              {(!config.type ||
+                config.type === "text" ||
+                config.type === "email" ||
+                config.type === "tel" ||
+                config.type === "date") && (
+                <input
+                  type={config.type ?? "text"}
+                  {...field}
+                  onChange={(e) => {
+                    let value = e.target.value;
+
+                    if (config.name === "phone") {
+                      value = value.replace(/[^0-9-]/g, "");
+                    }
+
+                    field.onChange(value);
+                  }}
+                  className={`input ${hasError ? "!border-red-500" : ""}`}
+                  maxLength={config.maxLength ?? 100}
+                />
+              )}
+
+              {fieldState.error && (
+                <p className="text-xs text-red-500 mt-1">
+                  {fieldState.error.message}
+                </p>
+              )}
+            </>
+          );
+        }}
       />
     );
   };
@@ -153,7 +191,7 @@ export default function PatientForm() {
             {section.title}
           </h2>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {section.fields.map((field) => (
               <FormField
                 key={field.name}
@@ -177,7 +215,7 @@ export default function PatientForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+        className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2 font-bold"
       >
         {isSubmitting && (
           <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>

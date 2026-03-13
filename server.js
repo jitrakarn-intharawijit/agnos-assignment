@@ -7,9 +7,22 @@ const io = new Server(4000, {
 });
 
 io.on("connection", (socket) => {
-  console.log("User connected");
+  console.log("client connected:", socket.id);
 
   socket.on("patient-update", (data) => {
-    io.emit("patient-update", data);
+    socket.broadcast.emit("patient-update", data);
+  });
+
+  socket.on("patient-status", (status) => {
+    socket.broadcast.emit("patient-status", status);
+  });
+
+  socket.on("patient-submitted", (data) => {
+    socket.broadcast.emit("patient-update", data);
+    socket.broadcast.emit("patient-status", "submitted");
+  });
+
+  socket.on("disconnect", () => {
+    console.log("client disconnected:", socket.id);
   });
 });
