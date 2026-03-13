@@ -24,8 +24,8 @@ export default function PatientForm() {
   const onSubmit = async (formData: PatientFormData) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    socket.emit("patient-update", formData); // ส่งข้อมูลล่าสุด
-    socket.emit("patient-status", "submitted"); // ส่งสถานะ
+    socket.emit("patient-update", formData);
+    socket.emit("patient-status", "submitted");
 
     setSubmitted(true);
   };
@@ -33,15 +33,12 @@ export default function PatientForm() {
   useEffect(() => {
     if (!data) return;
 
-    // แจ้งว่ากำลังพิมพ์
     socket.emit("patient-status", "typing");
 
-    // debounce update
     const updateTimer = setTimeout(() => {
       socket.emit("patient-update", data);
     }, 300);
 
-    // idle detection
     const idleTimer = setTimeout(() => {
       socket.emit("patient-status", "idle");
     }, 10000);
@@ -51,6 +48,12 @@ export default function PatientForm() {
       clearTimeout(idleTimer);
     };
   }, [data]);
+
+  useEffect(() => {
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   // ####################### Field #######################
   const formSections: { title: string; fields: FieldConfig[] }[] = [

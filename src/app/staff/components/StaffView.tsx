@@ -39,6 +39,12 @@ export default function StaffView() {
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   const StatusIndicator = () => {
     const statusConfig: Record<string, StatusConfig> = {
       typing: {

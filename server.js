@@ -5,6 +5,10 @@ const { Server } = require("socket.io");
 const app = express();
 const server = http.createServer(app);
 
+app.get("/", (req, res) => {
+  res.send("Socket server is running");
+});
+
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -12,7 +16,7 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  console.log("User connected");
+  console.log("User connected:", socket.id);
 
   socket.on("patient-update", (data) => {
     socket.broadcast.emit("patient-update", data);
@@ -23,7 +27,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected");
+    console.log("User disconnected:", socket.id);
   });
 });
 
