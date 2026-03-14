@@ -90,7 +90,7 @@ The layout adapts to different screen sizes:
 | ------- | -------------------- |
 | Mobile  | Single column layout |
 | Tablet  | Two column grid      |
-| Desktop | Three column grid    |
+| Desktop | Two column grid      |
 
 ---
 
