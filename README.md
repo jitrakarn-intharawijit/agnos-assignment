@@ -263,10 +263,10 @@ If the project were expanded further, several enhancements could be implemented:
 ### Frontend (Vercel)
 
 Patient Form
-https://agnos-assignment-7n42v3bod-jitrakarn-intharawijits-projects.vercel.app/patient
+https://agnos-assignment-77nxd0sjl-jitrakarn-intharawijits-projects.vercel.app/patient
 
 Staff Dashboard
-https://agnos-assignment-7n42v3bod-jitrakarn-intharawijits-projects.vercel.app/staff
+https://agnos-assignment-77nxd0sjl-jitrakarn-intharawijits-projects.vercel.app/staff
 
 ### Socket Server (Render)
 
